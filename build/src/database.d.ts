@@ -3,5 +3,8 @@ export declare class Database {
     connection: mysqlTypes.Connection;
     constructor(config: mysqlTypes.ConnectionConfig);
     getAllProducts(): Promise<mysqlTypes.QueryFunction[]>;
-    close(): Promise<void>;
+    printAllProducts(): Promise<any>;
+    getProductById(productId: number): any;
+    productExists(productId: number): Promise<boolean>;
+    close(): void;
 }

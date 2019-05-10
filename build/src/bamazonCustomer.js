@@ -12,50 +12,96 @@ const config = {
 };
 async function main() {
     const database = new database_1.Database(config);
-    const res = await getAllProducts(database);
-    console.table(res.headers, res.values);
-    const action = await inquirer
+    await database.printAllProducts();
+    // try {
+    //   await database.printAllProducts();
+    //   const productId = await getProductId(database);
+    //   console.log(productId)
+    //   const y = await getProductId(database)
+    //   console.log(y)
+    //   database.close()
+    // } catch (err) {
+    //   console.log(err)
+    // }
+    // const products = await database.getAllProducts();
+    // printAllProducts(products)
+    inquirer
         .prompt({
-        name: "postOrBid",
-        type: "list",
-        message: "Would you like to [POST] an auction or [BID] on an auction?",
-        choices: ["POST", "BID", "EXIT"]
+        name: "id",
+        type: "number",
+        message: "Choose an item id to purchase",
+    }).then((answer) => {
+        validateProductId(answer.id, database);
+        // inquirer.prompt({
+        //   name: "units",
+        //   type: "number",
+        //   message: "Choose a number of units to purchase",
+        // }).then((res: number) => {
+        //   console.log(res)
+        //   database.close();
+        // })
     });
-    // .then(function(answer) {
-    //   // based on their answer, either call the bid or the post functions
-    //   if (answer.postOrBid === "POST") {
-    //     postAuction();
-    //   }
-    //   else if(answer.postOrBid === "BID") {
-    //     bidAuction();
-    //   } else{
-    //     connection.end();
-    //   }
+    // console.log(chosenProductId)
+    // const numUnits = await inquirer.prompt({
+    //   name: "units",
+    //   type: "number",
+    //   message: "Choose a number of units to purchase",
     // });
+    // console.log(numUnits)
+    // database.close();
 }
 main();
-async function getAllProducts(database) {
-    try {
-        const someRows = await database.getAllProducts().then(rows => {
-            return rows;
-        });
-        const values = [];
-        const headers = ['item_id', 'product_name', 'department_name', 'price', 'stock_quantity'];
-        someRows.forEach(product => {
-            const colData = [];
-            colData.push(product.item_id);
-            colData.push(product.product_name);
-            colData.push(product.department_name);
-            colData.push(product.price);
-            colData.push(product.stock_quantity);
-            values.push(colData);
-        });
-        return { 'headers': headers, values };
-    }
-    catch (err) {
-        console.log(err);
-        database.close();
-    }
+// async function getProductId(database: Database): Promise<any> {
+//   try {
+//     const chosenProductId: { id: number } = await inquirer
+//       .prompt({
+//         name: "id",
+//         type: "number",
+//         message: "Choose an item id to purchase",
+//         async validate(productId: number) {
+//           const x = await database.productExists(productId).then(res => {
+//             console.log(res)
+//             return res
+//           })
+//           return x; 
+//         },
+//       });
+//     return chosenProductId.id;
+//   } catch (err) {
+//     console.log(err)
+//   }
+// }
+function validateProductId(productId, database) {
+    database.productExists(productId).then(response => {
+        console.log(response);
+        if (response) {
+        }
+        else {
+        }
+    });
+}
+// function validateProductId(productId: number, products: any[]): boolean {
+//   for (let i = 0; i < products.length; i++) {
+//     if (products[i].item_id === productId) {
+//       return true;
+//     }
+//   }
+//   console.log('Item with id ' + productId + ' does not exit.');
+//   return false;
+// }
+async function printAllProducts(productList) {
+    const values = [];
+    const headers = ['item_id', 'product_name', 'department_name', 'price', 'stock_quantity'];
+    productList.forEach(product => {
+        const colData = [];
+        colData.push(product.item_id);
+        colData.push(product.product_name);
+        colData.push(product.department_name);
+        colData.push(product.price);
+        colData.push(product.stock_quantity);
+        values.push(colData);
+    });
+    console.table(headers, values);
 }
 // getAllProducts()
 // async function get() {

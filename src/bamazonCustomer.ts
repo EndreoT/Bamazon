@@ -1,5 +1,6 @@
 import { Database } from './database';
 import * as mysqlTypes from "../node_modules/@types/mysql";
+import { get } from 'https';
 
 const inquirer = require('inquirer');
 const cTable = require('console.table');
@@ -16,61 +17,124 @@ const config = {
 
 async function main() {
   const database = new Database(config);
-  const res: any = await getAllProducts(database);
-  console.table(res.headers, res.values);
+  await database.printAllProducts();
+  // try {
+  //   await database.printAllProducts();
+  //   const productId = await getProductId(database);
+  //   console.log(productId)
+  //   const y = await getProductId(database)
+  //   console.log(y)
+  //   database.close()
+  // } catch (err) {
+  //   console.log(err)
+  // }
+  // const products = await database.getAllProducts();
+  // printAllProducts(products)
 
-  const action = await inquirer
+  inquirer
     .prompt({
-      name: "action",
-      type: "input",
+      name: "id",
+      type: "number",
       message: "Choose an item id to purchase",
-      validate: (productId: string) => validateProductId(productId, res.values),
+    }).then((answer: { id: number }) => {
+      validateProductId(answer.id, database)
+
+
+      // inquirer.prompt({
+      //   name: "units",
+      //   type: "number",
+      //   message: "Choose a number of units to purchase",
+      // }).then((res: number) => {
+      //   console.log(res)
+
+      //   database.close();
+
+      // })
+
     });
-  
 
 
+  // console.log(chosenProductId)
+  // const numUnits = await inquirer.prompt({
+  //   name: "units",
+  //   type: "number",
+  //   message: "Choose a number of units to purchase",
+  // });
+  // console.log(numUnits)
+
+  // database.close();
 }
 
 main();
 
+// async function getProductId(database: Database): Promise<any> {
+//   try {
+//     const chosenProductId: { id: number } = await inquirer
+//       .prompt({
+//         name: "id",
+//         type: "number",
+//         message: "Choose an item id to purchase",
+//         async validate(productId: number) {
+//           const x = await database.productExists(productId).then(res => {
+//             console.log(res)
+//             return res
+//           })
+//           return x; 
+//         },
+//       });
+//     return chosenProductId.id;
+//   } catch (err) {
+//     console.log(err)
+//   }
+// }
 
-function validateProductId(productId: string, products: string[]): boolean {
-  for (let i = 0; i < products.length; i++) {
-    if (products[i][0] === productId) {
-      return true;
+
+function validateProductId(productId: number, database: Database) {
+  database.productExists(productId).then(response => {
+    console.log(response)
+    if (response) {
+      selectProductQuantity(productId, database)
+    } else {
+      console.log('Product does not exits');
+      database.close();
     }
-  }
-  console.log('Item with id ' + productId + ' does not exit.');
-  return false;
+  })
+}
+
+function selectProductQuantity(productId: number, database: Database) {
+  
 }
 
 
-async function getAllProducts(database: Database): Promise<any> {
-  try {
-    const someRows: any[] = await database.getAllProducts().then(rows => {
-      return rows;
-    });
-    const values: any = [];
+// function validateProductId(productId: number, products: any[]): boolean {
+//   for (let i = 0; i < products.length; i++) {
+//     if (products[i].item_id === productId) {
+//       return true;
+//     }
+//   }
+//   console.log('Item with id ' + productId + ' does not exit.');
+//   return false;
+// }
 
-    const headers: string[] = ['item_id', 'product_name', 'department_name', 'price', 'stock_quantity'];
 
-    someRows.forEach(product => {
-      const colData: string | number[] = [];
-      colData.push(product.item_id);
-      colData.push(product.product_name);
-      colData.push(product.department_name);
-      colData.push(product.price);
-      colData.push(product.stock_quantity);
-      values.push(colData);
-    });
+async function printAllProducts(productList: any[]): Promise<any> {
+  const values: any = [];
 
-    return {'headers': headers, values};
+  const headers: string[] = ['item_id', 'product_name', 'department_name', 'price', 'stock_quantity'];
 
-  } catch (err) {
-    console.log(err);
-    database.close();
-  }
+  productList.forEach(product => {
+    const colData: string | number[] = [];
+    colData.push(product.item_id);
+    colData.push(product.product_name);
+    colData.push(product.department_name);
+    colData.push(product.price);
+    colData.push(product.stock_quantity);
+    values.push(colData);
+  });
+
+  console.table(headers, values)
 }
+
 
 // getAllProducts()
 
