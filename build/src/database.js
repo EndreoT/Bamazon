@@ -67,6 +67,46 @@ class Database {
             console.log(err);
         });
     }
+    stockExists(productId, unitsToBuy) {
+        return this.getProductById(productId).then((product) => {
+            if (product[0].stock_quantity >= unitsToBuy) {
+                return true;
+            }
+            console.log('Item with id ' + productId + ' does not not have enough stock.');
+            return false;
+        }).catch((err) => {
+            console.log(err);
+        });
+    }
+    // Returns total price
+    async updateStock(productId, unitsToBuy) {
+        try {
+            if (await this.stockExists(productId, unitsToBuy)) {
+                const product = await this.getProductById(productId).then((item) => {
+                    return item[0];
+                });
+                const newStock = product.stock_quantity - unitsToBuy;
+                const totalPrice = unitsToBuy * product.price;
+                console.log(newStock, totalPrice);
+                await this.connection.query("UPDATE products SET ? WHERE ?", [
+                    {
+                        stock_quantity: newStock,
+                    },
+                    {
+                        item_id: productId,
+                    },
+                ]);
+                return totalPrice;
+            }
+            else {
+                return -1;
+            }
+        }
+        catch (err) {
+            console.log(err);
+            return -1;
+        }
+    }
     // query(sql, args) {
     //   return new Promise((resolve, reject) => {
     //     this.connection.query('SELECT * FROM bids', (err, rows) => {

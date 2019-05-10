@@ -30,25 +30,12 @@ async function main() {
         name: "id",
         type: "number",
         message: "Choose an item id to purchase",
+        validate(anwer) {
+            return Number.isInteger(anwer);
+        },
     }).then((answer) => {
         validateProductId(answer.id, database);
-        // inquirer.prompt({
-        //   name: "units",
-        //   type: "number",
-        //   message: "Choose a number of units to purchase",
-        // }).then((res: number) => {
-        //   console.log(res)
-        //   database.close();
-        // })
     });
-    // console.log(chosenProductId)
-    // const numUnits = await inquirer.prompt({
-    //   name: "units",
-    //   type: "number",
-    //   message: "Choose a number of units to purchase",
-    // });
-    // console.log(numUnits)
-    // database.close();
 }
 main();
 // async function getProductId(database: Database): Promise<any> {
@@ -75,10 +62,39 @@ function validateProductId(productId, database) {
     database.productExists(productId).then(response => {
         console.log(response);
         if (response) {
+            selectProductQuantity(productId, database);
         }
         else {
+            console.log('Product does not exits');
+            database.close();
         }
     });
+}
+function selectProductQuantity(productId, database) {
+    inquirer.prompt({
+        name: "units",
+        type: "number",
+        message: "Choose a number of units to purchase",
+        validate(anwer) {
+            return Number.isInteger(anwer);
+        },
+    }).then((answer) => {
+        database.stockExists(productId, answer.units).then((response) => {
+            if (response) {
+                console.log('can buy');
+                makePurchase(productId, answer.units, database);
+            }
+            else {
+                console.log('cannot buy');
+                database.close();
+            }
+        });
+    });
+}
+async function makePurchase(productId, units, database) {
+    const totalPrice = await database.updateStock(productId, units);
+    console.log(totalPrice);
+    database.close();
 }
 // function validateProductId(productId: number, products: any[]): boolean {
 //   for (let i = 0; i < products.length; i++) {

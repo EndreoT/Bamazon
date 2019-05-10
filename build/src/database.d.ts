@@ -6,5 +6,7 @@ export declare class Database {
     printAllProducts(): Promise<any>;
     getProductById(productId: number): any;
     productExists(productId: number): Promise<boolean>;
+    stockExists(productId: number, unitsToBuy: number): any;
+    updateStock(productId: number, unitsToBuy: number): Promise<number>;
     close(): void;
 }

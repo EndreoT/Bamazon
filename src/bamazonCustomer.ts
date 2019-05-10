@@ -36,33 +36,12 @@ async function main() {
       name: "id",
       type: "number",
       message: "Choose an item id to purchase",
+      validate(anwer: number) {
+        return Number.isInteger(anwer);
+      },
     }).then((answer: { id: number }) => {
-      validateProductId(answer.id, database)
-
-
-      // inquirer.prompt({
-      //   name: "units",
-      //   type: "number",
-      //   message: "Choose a number of units to purchase",
-      // }).then((res: number) => {
-      //   console.log(res)
-
-      //   database.close();
-
-      // })
-
+      validateProductId(answer.id, database);
     });
-
-
-  // console.log(chosenProductId)
-  // const numUnits = await inquirer.prompt({
-  //   name: "units",
-  //   type: "number",
-  //   message: "Choose a number of units to purchase",
-  // });
-  // console.log(numUnits)
-
-  // database.close();
 }
 
 main();
@@ -102,7 +81,32 @@ function validateProductId(productId: number, database: Database) {
 }
 
 function selectProductQuantity(productId: number, database: Database) {
-  
+  inquirer.prompt({
+      name: "units",
+      type: "number",
+      message: "Choose a number of units to purchase",
+      validate(anwer: number) {
+        return Number.isInteger(anwer);
+      },
+    }).then((answer: {units: number}) => {
+      database.stockExists(productId, answer.units).then((response: boolean) => {
+        if (response) {
+          console.log('can buy')
+          makePurchase(productId, answer.units, database)
+        } else {
+          console.log('cannot buy')
+          database.close();
+        }
+      })
+
+    })
+}
+
+async function makePurchase(productId: number, units: number, database: Database) {
+  const totalPrice: number = await database.updateStock(productId, units)
+  console.log(totalPrice)
+  database.close();
+
 }
 
 
