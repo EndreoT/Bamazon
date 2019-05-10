@@ -1,13 +1,7 @@
-interface Config {
-    host: string;
-    port: number;
-    user: string;
-    password: string;
-    database: string;
-}
+import * as mysqlTypes from "../node_modules/@types/mysql";
 export declare class Database {
-    connection: any;
-    constructor(config: Config);
+    connection: mysqlTypes.Connection;
+    constructor(config: mysqlTypes.ConnectionConfig);
+    getAllProducts(): Promise<mysqlTypes.QueryFunction[]>;
     close(): Promise<void>;
 }
-export {};

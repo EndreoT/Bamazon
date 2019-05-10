@@ -2,14 +2,6 @@ import * as mysqlTypes from "../node_modules/@types/mysql";
 import mysql = require('mysql');
 
 
-const config = {
-  host: 'localhost',
-  port: 3306,
-  user: 'root',
-  password: '1234',
-  database: 'bamazon',
-};
-
 // interface Config {
 //   host: string;
 //   port: number;
@@ -23,6 +15,15 @@ export class Database {
   
   constructor(config: mysqlTypes.ConnectionConfig) {
     this.connection = mysql.createConnection(config);  
+  }
+
+   getAllProducts(): Promise<mysqlTypes.QueryFunction[]> {
+    return new Promise((resolve, reject) => {
+      this.connection.query('SELECT * FROM products', (err: mysqlTypes.MysqlError, rows: mysqlTypes.QueryFunction[]) => {
+        if (err) reject(err);
+        resolve(rows);
+      });
+    });
   }
 
   // query(sql, args) {
@@ -45,19 +46,3 @@ export class Database {
 
 
 
-const database = new Database(config);
-
-// async function get() {
-//   try {
-//     const someRows = await database.query('SELECT * FROM some_table').then(rows => {
-//       return rows
-//     })
-//     console.log(someRows)
-//   } catch (err) {
-//     console.log(err)
-//   }
-
-//   database.close()
-// }
-
-// get()
