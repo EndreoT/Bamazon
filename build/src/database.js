@@ -1,13 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mysql = require("mysql");
-// interface Config {
-//   host: string;
-//   port: number;
-//   user: string;
-//   password: string;
-//   database: string;
-// }
 class Database {
     constructor(config) {
         this.connection = mysql.createConnection(config);
@@ -23,7 +16,7 @@ class Database {
     }
     async printAllProducts() {
         try {
-            const rowsResult = await this.getAllProducts().then(rows => {
+            const rowsResult = await this.getAllProducts().then((rows) => {
                 return rows;
             });
             const values = [];
@@ -61,7 +54,6 @@ class Database {
             if (product.length === 1) {
                 return true;
             }
-            console.log('Item with id ' + productId + ' does not exit.');
             return false;
         }).catch((err) => {
             console.log(err);
@@ -72,7 +64,6 @@ class Database {
             if (product[0].stock_quantity >= unitsToBuy) {
                 return true;
             }
-            console.log('Item with id ' + productId + ' does not not have enough stock.');
             return false;
         }).catch((err) => {
             console.log(err);
@@ -87,7 +78,6 @@ class Database {
                 });
                 const newStock = product.stock_quantity - unitsToBuy;
                 const totalPrice = unitsToBuy * product.price;
-                console.log(newStock, totalPrice);
                 await this.connection.query("UPDATE products SET ? WHERE ?", [
                     {
                         stock_quantity: newStock,
@@ -96,15 +86,15 @@ class Database {
                         item_id: productId,
                     },
                 ]);
-                return totalPrice;
+                return { product, unitsToBuy, totalPrice };
             }
             else {
-                return -1;
+                return {};
             }
         }
         catch (err) {
             console.log(err);
-            return -1;
+            return {};
         }
     }
     // query(sql, args) {
@@ -124,13 +114,4 @@ class Database {
     }
 }
 exports.Database = Database;
-// const config = {
-//   host: 'localhost',
-//   port: 3306,
-//   user: 'root',
-//   password: '1234',
-//   database: 'bamazon',
-// };
-// const database = new Database(config);
-// database.productExists(44);
 //# sourceMappingURL=database.js.map

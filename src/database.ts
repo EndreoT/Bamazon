@@ -2,14 +2,6 @@ import * as mysqlTypes from "../node_modules/@types/mysql";
 import mysql = require('mysql');
 
 
-// interface Config {
-//   host: string;
-//   port: number;
-//   user: string;
-//   password: string;
-//   database: string;
-// }
-
 export class Database {
   connection: mysqlTypes.Connection;
 
@@ -26,9 +18,9 @@ export class Database {
     });
   }
 
-  async printAllProducts(): Promise<any> {
+  async printAllProducts(): Promise<void> {
     try {
-      const rowsResult: any[] = await this.getAllProducts().then(rows => {
+      const rowsResult: any[] = await this.getAllProducts().then((rows: mysqlTypes.QueryFunction[]) => {
         return rows;
       });
       const values: any[] = [];
@@ -72,7 +64,6 @@ export class Database {
       if (product.length === 1) {
         return true;
       } 
-      console.log('Item with id ' + productId + ' does not exit.');
       return false;
     }).catch((err: string) => {
       console.log(err);
@@ -84,7 +75,6 @@ export class Database {
       if (product[0].stock_quantity >= unitsToBuy) {
         return true;
       } 
-      console.log('Item with id ' + productId + ' does not not have enough stock.');
       return false;
     }).catch((err: string) => {
       console.log(err);
@@ -92,7 +82,7 @@ export class Database {
   }
 
   // Returns total price
-  async updateStock(productId: number, unitsToBuy: number): Promise<number> {
+  async updateStock(productId: number, unitsToBuy: number): Promise<{product?: any, unitsToBuy?: number, totalPrice?: number}> {
     try {
       if (await this.stockExists(productId, unitsToBuy)) {
         const product = await this.getProductById(productId).then((item: any) => {
@@ -100,7 +90,6 @@ export class Database {
         });
         const newStock: number = product.stock_quantity - unitsToBuy;
         const totalPrice: number = unitsToBuy * product.price;
-        console.log(newStock, totalPrice)
         await this.connection.query("UPDATE products SET ? WHERE ?", 
         [
           {
@@ -110,14 +99,13 @@ export class Database {
             item_id: productId,
           },
         ]);
-        return totalPrice;
+        return {product, unitsToBuy, totalPrice};
       } else {
-        return -1;
+        return {};
       }
-
     } catch (err) {
-      console.log(err)
-      return -1;
+      console.log(err);
+      return {};
     }
     
   }
@@ -139,17 +127,3 @@ export class Database {
     });
   }
 }
-
-
-
-// const config = {
-//   host: 'localhost',
-//   port: 3306,
-//   user: 'root',
-//   password: '1234',
-//   database: 'bamazon',
-// };
-
-
-// const database = new Database(config);
-// database.productExists(44);
