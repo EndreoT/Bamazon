@@ -2,6 +2,14 @@ import * as mysqlTypes from "../node_modules/@types/mysql";
 import mysql = require('mysql');
 
 
+interface ProductData {
+  item_id: number;
+  product_name: string;
+  department_name: string;
+  price: number;
+  stock_quantity: number;
+}
+
 export class Database {
   connection: mysqlTypes.Connection;
 
@@ -9,9 +17,9 @@ export class Database {
     this.connection = mysql.createConnection(config);
   }
 
-  getAllProducts(): Promise<mysqlTypes.QueryFunction[]> {
+  getAllProducts(): Promise<ProductData[]> {
     return new Promise((resolve, reject) => {
-      this.connection.query('SELECT * FROM products', (err: mysqlTypes.MysqlError, rows: mysqlTypes.QueryFunction[]) => {
+      this.connection.query('SELECT * FROM products', (err: mysqlTypes.MysqlError, rows: ProductData[]) => {
         if (err) reject(err);
         resolve(rows);
       });
@@ -20,7 +28,7 @@ export class Database {
 
   async printAllProducts(): Promise<void> {
     try {
-      const rowsResult: any[] = await this.getAllProducts().then((rows: mysqlTypes.QueryFunction[]) => {
+      const rowsResult: ProductData[] = await this.getAllProducts().then((rows: ProductData[]) => {
         return rows;
       });
       const values: any[] = [];
@@ -28,7 +36,7 @@ export class Database {
       const headers: string[] = ['item_id', 'product_name', 'department_name', 'price', 'stock_quantity'];
 
       rowsResult.forEach(product => {
-        const colData: string | number[] = [];
+        const colData: Array<string | number> = [];
         colData.push(product.item_id);
         colData.push(product.product_name);
         colData.push(product.department_name);
@@ -45,11 +53,11 @@ export class Database {
     }
   }
 
-  getProductById(productId: number): any {
+  getProductById(productId: number): Promise<ProductData[]> {
     return new Promise((resolve, reject) => {
       this.connection.query(
         'SELECT * FROM products WHERE item_id=' + productId,
-        (err: mysqlTypes.MysqlError, row: mysqlTypes.QueryFunction[]) => {
+        (err: mysqlTypes.MysqlError, row: ProductData[]) => {
           if (err) reject(err);
           resolve(row);
         });
@@ -60,32 +68,36 @@ export class Database {
     if (productId === null) {
       return false;
     }
-    return this.getProductById(productId).then((product: any[]) => {
+    return this.getProductById(productId).then((product: ProductData[]) => {
       if (product.length === 1) {
         return true;
       } 
       return false;
     }).catch((err: string) => {
       console.log(err);
+      return false;
     });
   }
 
-  stockExists(productId: number, unitsToBuy: number) {
-    return this.getProductById(productId).then((product: any) => {
+  async stockExists(productId: number, unitsToBuy: number): Promise<boolean> {
+    try {
+      const product = await this.getProductById(productId);
       if (product[0].stock_quantity >= unitsToBuy) {
         return true;
-      } 
+      }
       return false;
-    }).catch((err: string) => {
+    }
+    catch (err) {
       console.log(err);
-    });
+      return false;
+    }
   }
 
   // Returns total price
-  async updateStock(productId: number, unitsToBuy: number): Promise<{product?: any, unitsToBuy?: number, totalPrice?: number}> {
+  async updateStock(productId: number, unitsToBuy: number): Promise<{product?: ProductData, unitsToBuy?: number, totalPrice?: number}> {
     try {
       if (await this.stockExists(productId, unitsToBuy)) {
-        const product = await this.getProductById(productId).then((item: any) => {
+        const product = await this.getProductById(productId).then((item: ProductData[]) => {
           return item[0];
         });
         const newStock: number = product.stock_quantity - unitsToBuy;

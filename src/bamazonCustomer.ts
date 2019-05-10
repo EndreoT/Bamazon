@@ -69,16 +69,19 @@ function selectProductQuantity(productId: number, database: Database) {
 
 async function makePurchase(productId: number, units: number, database: Database) {
   const result = await database.updateStock(productId, units);
-  console.log("====================================");
-  console.log('Purchase receipt');
-  console.log("====================================");
-  console.table([
-    {
-      'Item': result.product.product_name,
-      'Units purchased': result.unitsToBuy,
-      'Cost': result.totalPrice,
-    },
-  ]);
+  if (result.product) {
+    console.log("====================================");
+    console.log('Purchase receipt');
+    console.log("====================================");
+    console.table([
+      {
+        'Item': result.product.product_name,
+        'Units purchased': result.unitsToBuy,
+        'Cost': result.totalPrice,
+      },
+    ]);
+  }
+ 
   database.close();
 }
 
