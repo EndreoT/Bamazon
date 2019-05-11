@@ -34,7 +34,7 @@ async function main() {
 }
 
 function validateProductId(productId: number, database: Database) {
-  database.productExists(productId).then(response => {
+  database.productExists(productId).then((response: boolean)=> {
     if (response) {
       selectProductQuantity(productId, database);
     } else {

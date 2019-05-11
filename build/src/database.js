@@ -42,7 +42,7 @@ class Database {
             this.connection.query('SELECT * FROM products WHERE item_id=' + productId, (err, row) => {
                 if (err)
                     reject(err);
-                resolve(row);
+                resolve(row[0]);
             });
         });
     }
@@ -51,30 +51,34 @@ class Database {
             return false;
         }
         return this.getProductById(productId).then((product) => {
-            if (product.length === 1) {
+            if (product) {
                 return true;
             }
             return false;
         }).catch((err) => {
             console.log(err);
+            return false;
         });
     }
-    stockExists(productId, unitsToBuy) {
-        return this.getProductById(productId).then((product) => {
-            if (product[0].stock_quantity >= unitsToBuy) {
+    async stockExists(productId, unitsToBuy) {
+        try {
+            const product = await this.getProductById(productId);
+            if (product.stock_quantity >= unitsToBuy) {
                 return true;
             }
             return false;
-        }).catch((err) => {
+        }
+        catch (err) {
             console.log(err);
-        });
+            return false;
+        }
     }
     // Returns total price
     async updateStock(productId, unitsToBuy) {
         try {
             if (await this.stockExists(productId, unitsToBuy)) {
                 const product = await this.getProductById(productId).then((item) => {
-                    return item[0];
+                    return item;
                 });
                 const newStock = product.stock_quantity - unitsToBuy;
                 const totalPrice = unitsToBuy * product.price;

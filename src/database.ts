@@ -53,13 +53,13 @@ export class Database {
     }
   }
 
-  getProductById(productId: number): Promise<ProductData[]> {
+  getProductById(productId: number): Promise<ProductData> {
     return new Promise((resolve, reject) => {
       this.connection.query(
         'SELECT * FROM products WHERE item_id=' + productId,
         (err: mysqlTypes.MysqlError, row: ProductData[]) => {
           if (err) reject(err);
-          resolve(row);
+          resolve(row[0]);
         });
     });
   }
@@ -68,10 +68,10 @@ export class Database {
     if (productId === null) {
       return false;
     }
-    return this.getProductById(productId).then((product: ProductData[]) => {
-      if (product.length === 1) {
+    return this.getProductById(productId).then((product: ProductData) => {
+      if (product) {
         return true;
-      } 
+      }
       return false;
     }).catch((err: string) => {
       console.log(err);
@@ -81,8 +81,8 @@ export class Database {
 
   async stockExists(productId: number, unitsToBuy: number): Promise<boolean> {
     try {
-      const product = await this.getProductById(productId);
-      if (product[0].stock_quantity >= unitsToBuy) {
+      const product: ProductData = await this.getProductById(productId);
+      if (product.stock_quantity >= unitsToBuy) {
         return true;
       }
       return false;
@@ -93,25 +93,25 @@ export class Database {
     }
   }
 
-  // Returns total price
-  async updateStock(productId: number, unitsToBuy: number): Promise<{product?: ProductData, unitsToBuy?: number, totalPrice?: number}> {
+  // Returns total cost of product purchased
+  async updateStock(productId: number, unitsToBuy: number): Promise<{ product?: ProductData, unitsToBuy?: number, totalPrice?: number }> {
     try {
       if (await this.stockExists(productId, unitsToBuy)) {
-        const product = await this.getProductById(productId).then((item: ProductData[]) => {
-          return item[0];
+        const product: ProductData = await this.getProductById(productId).then((item: ProductData) => {
+          return item;
         });
         const newStock: number = product.stock_quantity - unitsToBuy;
         const totalPrice: number = unitsToBuy * product.price;
-        await this.connection.query("UPDATE products SET ? WHERE ?", 
-        [
-          {
-            stock_quantity: newStock,
-          },
-          {
-            item_id: productId,
-          },
-        ]);
-        return {product, unitsToBuy, totalPrice};
+        await this.connection.query("UPDATE products SET ? WHERE ?",
+          [
+            {
+              stock_quantity: newStock,
+            },
+            {
+              item_id: productId,
+            },
+          ]);
+        return { product, unitsToBuy, totalPrice };
       } else {
         return {};
       }
@@ -119,7 +119,6 @@ export class Database {
       console.log(err);
       return {};
     }
-    
   }
 
   // query(sql, args) {

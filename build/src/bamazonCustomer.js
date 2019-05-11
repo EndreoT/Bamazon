@@ -64,16 +64,18 @@ function selectProductQuantity(productId, database) {
 }
 async function makePurchase(productId, units, database) {
     const result = await database.updateStock(productId, units);
-    console.log("====================================");
-    console.log('Purchase receipt');
-    console.log("====================================");
-    console.table([
-        {
-            'Item': result.product.product_name,
-            'Units purchased': result.unitsToBuy,
-            'Cost': result.totalPrice,
-        },
-    ]);
+    if (result.product) {
+        console.log("====================================");
+        console.log('Purchase receipt');
+        console.log("====================================");
+        console.table([
+            {
+                'Item': result.product.product_name,
+                'Units purchased': result.unitsToBuy,
+                'Cost': result.totalPrice,
+            },
+        ]);
+    }
     database.close();
 }
 main();
