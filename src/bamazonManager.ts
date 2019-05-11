@@ -92,11 +92,17 @@ function addNewProduct(database: Database) {
       name: "product_name",
       type: "input",
       message: "Item name",
+      validate(answer: string) {
+        return answer ? true : false; 
+      },
     },
     {
       name: "department_name",
       type: "input",
       message: "Department name",
+      validate(answer: string) {
+        return answer ? true : false; 
+      },
     },
     {
       name: "price",

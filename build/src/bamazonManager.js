@@ -25,7 +25,6 @@ async function main() {
         name: "action",
         type: "list",
         message: "Choose an option",
-        // choices: ['View Products for Sale', 'View Low Inventory', 'Add to Inventory', 'Add New Product'],
         choices: [Choices.VIEW_PRODUCTS, Choices.LOW_INVENTORY, Choices.INC_INVENTORY, Choices.ADD_PRODUCT],
     }).then((answer) => {
         switch (answer.action) {
@@ -39,6 +38,7 @@ async function main() {
                 incrementInventory(database);
                 break;
             case Choices.ADD_PRODUCT:
+                addNewProduct(database);
                 break;
             default:
                 console.log('An error in selection occurred.');
@@ -75,6 +75,44 @@ function incrementInventory(database) {
                 database.close();
             }
         });
+    });
+}
+function addNewProduct(database) {
+    inquirer.prompt([
+        {
+            name: "product_name",
+            type: "input",
+            message: "Item name",
+            validate(answer) {
+                return answer ? true : false;
+            },
+        },
+        {
+            name: "department_name",
+            type: "input",
+            message: "Department name",
+            validate(answer) {
+                return answer ? true : false;
+            },
+        },
+        {
+            name: "price",
+            type: "number",
+            message: "Price per unit",
+            validate(answer) {
+                return utils_1.isInteger(answer);
+            },
+        },
+        {
+            name: "stock_quantity",
+            type: "number",
+            message: "Product stock",
+            validate(answer) {
+                return utils_1.isInteger(answer);
+            },
+        },
+    ]).then((answer) => {
+        database.addNewProduct(answer);
     });
 }
 main();

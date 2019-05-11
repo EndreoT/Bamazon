@@ -3,6 +3,7 @@ import mysql = require('mysql');
 
 import { ProductShape } from './utils';
 
+
 interface ProductData {
   item_id: number;
   product_name: string;
@@ -16,6 +17,17 @@ export class Database {
 
   constructor(config: mysqlTypes.ConnectionConfig) {
     this.connection = mysql.createConnection(config);
+  }
+
+  getProductById(productId: number): Promise<ProductData> {
+    return new Promise((resolve, reject) => {
+      this.connection.query(
+        'SELECT * FROM products WHERE item_id=' + productId,
+        (err: mysqlTypes.MysqlError, product: ProductData[]) => {
+          if (err) reject(err);
+          resolve(product[0]);
+        });
+    });
   }
 
   getAllProducts(): Promise<ProductData[]> {
@@ -32,8 +44,8 @@ export class Database {
     this.printProducts(allProducts);
   }
 
-  async printProducts(products: ProductData[]): Promise<void> {
-    try {
+  // Prints product argments in a nicely formatted  table
+  printProducts(products: ProductData[]): void {
       const values: any[] = [];
 
       const headers: string[] = ['item_id', 'product_name', 'department_name', 'price', 'stock_quantity'];
@@ -49,39 +61,27 @@ export class Database {
       });
 
       console.table(headers, values);
-
-    } catch (err) {
-      console.log(err);
-      this.close();
-    }
   }
 
-  getProductById(productId: number): Promise<ProductData> {
-    return new Promise((resolve, reject) => {
-      this.connection.query(
-        'SELECT * FROM products WHERE item_id=' + productId,
-        (err: mysqlTypes.MysqlError, row: ProductData[]) => {
-          if (err) reject(err);
-          resolve(row[0]);
-        });
-    });
-  }
-
+  // Checks if product exists in DB
   async productExists(productId: number): Promise<boolean> {
     if (productId === null) {
       return false;
     }
-    return this.getProductById(productId).then((product: ProductData) => {
+    try {
+      const product = await this.getProductById(productId);
       if (product) {
         return true;
       }
       return false;
-    }).catch((err: string) => {
+    }
+    catch (err) {
       console.log(err);
       return false;
-    });
+    }
   }
 
+  // Check if enough units of product can be purchased
   async stockExists(productId: number, unitsToBuy: number): Promise<boolean> {
     try {
       const product: ProductData = await this.getProductById(productId);
@@ -96,10 +96,10 @@ export class Database {
     }
   }
 
-  // Returns total cost of product purchased
+  // Decreases stock for an item and returns trasaction information
   async decreaseStock(productId: number, unitsToBuy: number): Promise<{ product?: ProductData, unitsToBuy?: number, totalPrice?: number }> {
     try {
-      const product: ProductData = await this.getProductById(productId);
+      // const product: ProductData = await this.getProductById(productId);
 
       if (await this.stockExists(productId, unitsToBuy)) {
         const product: ProductData = await this.getProductById(productId).then((item: ProductData) => {
@@ -127,6 +127,7 @@ export class Database {
     }
   }
 
+  // Displays all products with a stock_quantity < 5
   printLowStockProducts(): void {
     this.connection.query(
       "SELECT * from products WHERE stock_quantity < 5;",
@@ -136,13 +137,15 @@ export class Database {
       });
   }
 
-  increaseInventory(itemId: number, incrementAmount: number) {
+  // Increase an existing product's inventory by a given amount
+  increaseInventory(itemId: number, incrementAmount: number): void {
     this.connection.query(
       "UPDATE products SET stock_quantity = stock_quantity + " + incrementAmount + " WHERE item_id = " + itemId + ";"
     );
   }
 
-  addNewProduct(product: ProductShape) {
+  // Add a new product to the DB
+  addNewProduct(product: ProductShape): void {
     this.connection.query(
       "INSERT INTO products SET ?",
       product,
@@ -155,6 +158,7 @@ export class Database {
     );
   }
 
+  // End connection to DB
   close(): void {
     this.connection.end((err: mysqlTypes.MysqlError) => {
       if (err) {

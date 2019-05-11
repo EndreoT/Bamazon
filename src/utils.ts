@@ -1,5 +1,6 @@
- 
-export function isInteger(num: number) {
+// Utility functions and interfaces for type checking
+
+export function isInteger(num: number): boolean {
   if (!num) {
     return false;
   }

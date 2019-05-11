@@ -1,4 +1,5 @@
 import * as mysqlTypes from "../node_modules/@types/mysql";
+import { ProductShape } from './utils';
 interface ProductData {
     item_id: number;
     product_name: string;
@@ -9,10 +10,10 @@ interface ProductData {
 export declare class Database {
     connection: mysqlTypes.Connection;
     constructor(config: mysqlTypes.ConnectionConfig);
+    getProductById(productId: number): Promise<ProductData>;
     getAllProducts(): Promise<ProductData[]>;
     printAllProducts(): Promise<void>;
-    printProducts(products: ProductData[]): Promise<void>;
-    getProductById(productId: number): Promise<ProductData>;
+    printProducts(products: ProductData[]): void;
     productExists(productId: number): Promise<boolean>;
     stockExists(productId: number, unitsToBuy: number): Promise<boolean>;
     decreaseStock(productId: number, unitsToBuy: number): Promise<{
@@ -22,6 +23,7 @@ export declare class Database {
     }>;
     printLowStockProducts(): void;
     increaseInventory(itemId: number, incrementAmount: number): void;
+    addNewProduct(product: ProductShape): void;
     close(): void;
 }
 export {};
