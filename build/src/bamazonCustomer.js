@@ -63,7 +63,7 @@ function selectProductQuantity(productId, database) {
     });
 }
 async function makePurchase(productId, units, database) {
-    const result = await database.updateStock(productId, units);
+    const result = await database.decreaseStock(productId, units);
     if (result.product) {
         console.log("====================================");
         console.log('Purchase receipt');

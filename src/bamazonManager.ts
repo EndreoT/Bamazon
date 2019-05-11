@@ -1,5 +1,5 @@
 import { Database } from './database';
-import { isInteger } from './utils';
+import { isInteger, ProductShape } from './utils';
 
 const inquirer = require('inquirer');
 require('console.table');
@@ -28,7 +28,6 @@ async function main(): Promise<void> {
       name: "action",
       type: "list",
       message: "Choose an option",
-      // choices: ['View Products for Sale', 'View Low Inventory', 'Add to Inventory', 'Add New Product'],
       choices: [Choices.VIEW_PRODUCTS, Choices.LOW_INVENTORY, Choices.INC_INVENTORY, Choices.ADD_PRODUCT],
     }).then((answer: { action: string }) => {
       switch (answer.action) {
@@ -46,8 +45,8 @@ async function main(): Promise<void> {
           break;
 
         case Choices.ADD_PRODUCT:
+          addNewProduct(database);
           break;
-
 
         default:
           console.log('An error in selection occurred.');
@@ -84,6 +83,39 @@ function incrementInventory(database: Database) {
         database.close();
       }
     });
+  });
+}
+
+function addNewProduct(database: Database) {
+  inquirer.prompt([
+    {
+      name: "product_name",
+      type: "input",
+      message: "Item name",
+    },
+    {
+      name: "department_name",
+      type: "input",
+      message: "Department name",
+    },
+    {
+      name: "price",
+      type: "number",
+      message: "Price per unit",
+      validate(answer: number) {
+        return isInteger(answer);
+      },
+    },
+    {
+      name: "stock_quantity",
+      type: "number",
+      message: "Product stock",
+      validate(answer: number) {
+        return isInteger(answer);
+      },
+    },
+  ]).then((answer: ProductShape) => {
+    database.addNewProduct(answer);
   });
 }
 

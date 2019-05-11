@@ -68,7 +68,7 @@ function selectProductQuantity(productId: number, database: Database): void {
 }
 
 async function makePurchase(productId: number, units: number, database: Database): Promise<void> {
-  const result = await database.updateStock(productId, units);
+  const result = await database.decreaseStock(productId, units);
   if (result.product) {
     console.log("====================================");
     console.log('Purchase receipt');

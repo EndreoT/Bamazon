@@ -1,6 +1,7 @@
 import * as mysqlTypes from "../node_modules/@types/mysql";
 import mysql = require('mysql');
 
+import { ProductShape } from './utils';
 
 interface ProductData {
   item_id: number;
@@ -99,7 +100,7 @@ export class Database {
   async decreaseStock(productId: number, unitsToBuy: number): Promise<{ product?: ProductData, unitsToBuy?: number, totalPrice?: number }> {
     try {
       const product: ProductData = await this.getProductById(productId);
-      
+
       if (await this.stockExists(productId, unitsToBuy)) {
         const product: ProductData = await this.getProductById(productId).then((item: ProductData) => {
           return item;
@@ -135,12 +136,25 @@ export class Database {
       });
   }
 
-  incrementInventory(itemId: number, incrementAmount: number) {
+  increaseInventory(itemId: number, incrementAmount: number) {
     this.connection.query(
       "UPDATE products SET stock_quantity = stock_quantity + " + incrementAmount + " WHERE item_id = " + itemId + ";"
     );
   }
-  
+
+  addNewProduct(product: ProductShape) {
+    this.connection.query(
+      "INSERT INTO products SET ?",
+      product,
+      (err, res) => {
+        if (err) {
+          return console.log(err);
+        }
+        console.log(res.affectedRows + " product inserted!\n");
+      }
+    );
+  }
+
   close(): void {
     this.connection.end((err: mysqlTypes.MysqlError) => {
       if (err) {

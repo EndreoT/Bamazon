@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const database_1 = require("./database");
+const utils_1 = require("./utils");
 const inquirer = require('inquirer');
 require('console.table');
 const config = {
@@ -35,6 +36,7 @@ async function main() {
                 database.printLowStockProducts();
                 break;
             case Choices.INC_INVENTORY:
+                incrementInventory(database);
                 break;
             case Choices.ADD_PRODUCT:
                 break;
@@ -42,6 +44,37 @@ async function main() {
                 console.log('An error in selection occurred.');
                 break;
         }
+    });
+}
+function incrementInventory(database) {
+    inquirer.prompt([
+        {
+            name: "id",
+            type: "number",
+            message: "Choose a product id",
+            validate(answer) {
+                return utils_1.isInteger(answer);
+            },
+        },
+        {
+            name: "addToStock",
+            type: "number",
+            message: "Choose the number of units add to stock",
+            validate(answer) {
+                return utils_1.isInteger(answer);
+            },
+        },
+    ]).then((answer) => {
+        const productId = answer.id;
+        database.productExists(productId).then((response) => {
+            if (response) {
+                database.increaseInventory(productId, answer.addToStock);
+            }
+            else {
+                console.log('Ttem with id ' + productId + ' does not exist.');
+                database.close();
+            }
+        });
     });
 }
 main();

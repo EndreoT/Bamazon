@@ -75,8 +75,9 @@ class Database {
         }
     }
     // Returns total cost of product purchased
-    async updateStock(productId, unitsToBuy) {
+    async decreaseStock(productId, unitsToBuy) {
         try {
+            const product = await this.getProductById(productId);
             if (await this.stockExists(productId, unitsToBuy)) {
                 const product = await this.getProductById(productId).then((item) => {
                     return item;
@@ -108,6 +109,9 @@ class Database {
                 return console.log(err);
             this.printProducts(products);
         });
+    }
+    increaseInventory(itemId, incrementAmount) {
+        this.connection.query("UPDATE products SET stock_quantity = stock_quantity + " + incrementAmount + " WHERE item_id = " + itemId + ";");
     }
     close() {
         this.connection.end((err) => {

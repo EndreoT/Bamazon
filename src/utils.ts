@@ -5,3 +5,10 @@ export function isInteger(num: number) {
   }
   return Number.isInteger(num);
 }
+
+export interface ProductShape {
+  product_name: string;
+  department_name: string;
+  price: number;
+  stock_quantity: number;
+}

@@ -15,12 +15,13 @@ export declare class Database {
     getProductById(productId: number): Promise<ProductData>;
     productExists(productId: number): Promise<boolean>;
     stockExists(productId: number, unitsToBuy: number): Promise<boolean>;
-    updateStock(productId: number, unitsToBuy: number): Promise<{
+    decreaseStock(productId: number, unitsToBuy: number): Promise<{
         product?: ProductData;
         unitsToBuy?: number;
         totalPrice?: number;
     }>;
     printLowStockProducts(): void;
+    increaseInventory(itemId: number, incrementAmount: number): void;
     close(): void;
 }
 export {};
