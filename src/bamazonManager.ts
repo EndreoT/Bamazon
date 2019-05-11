@@ -1,4 +1,5 @@
 import { Database } from './database';
+import { isInteger } from './utils';
 
 const inquirer = require('inquirer');
 require('console.table');
@@ -19,9 +20,8 @@ enum Choices {
   ADD_PRODUCT = 'Add New Product',
 }
 
-async function main() {
+async function main(): Promise<void> {
   const database = new Database(config);
-  await database.printAllProducts();
 
   inquirer
     .prompt({
@@ -32,8 +32,20 @@ async function main() {
       choices: [Choices.VIEW_PRODUCTS, Choices.LOW_INVENTORY, Choices.INC_INVENTORY, Choices.ADD_PRODUCT],
     }).then((answer: { action: string }) => {
       switch (answer.action) {
+
         case Choices.VIEW_PRODUCTS:
           database.printAllProducts();
+          break;
+
+        case Choices.LOW_INVENTORY:
+          database.printLowStockProducts();
+          break;
+
+        case Choices.INC_INVENTORY:
+          incrementInventory(database);
+          break;
+
+        case Choices.ADD_PRODUCT:
           break;
 
 
@@ -42,6 +54,37 @@ async function main() {
           break;
       }
     });
+}
+
+function incrementInventory(database: Database) {
+  inquirer.prompt([
+    {
+      name: "id",
+      type: "number",
+      message: "Choose a product id",
+      validate(answer: number) {
+        return isInteger(answer);
+      },
+    },
+    {
+      name: "addToStock",
+      type: "number",
+      message: "Choose the number of units add to stock",
+      validate(answer: number) {
+        return isInteger(answer);
+      },
+    },
+  ]).then((answer: { id: number, addToStock: number }) => {
+    const productId = answer.id;
+    database.productExists(productId).then((response: boolean) => {
+      if (response) {
+        database.increaseInventory(productId, answer.addToStock);
+      } else {
+        console.log('Ttem with id ' + productId + ' does not exist.');
+        database.close();
+      }
+    });
+  });
 }
 
 main();

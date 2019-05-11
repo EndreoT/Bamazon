@@ -27,15 +27,17 @@ export class Database {
   }
 
   async printAllProducts(): Promise<void> {
+    const allProducts: ProductData[] = await this.getAllProducts();
+    this.printProducts(allProducts);
+  }
+
+  async printProducts(products: ProductData[]): Promise<void> {
     try {
-      const rowsResult: ProductData[] = await this.getAllProducts().then((rows: ProductData[]) => {
-        return rows;
-      });
       const values: any[] = [];
 
       const headers: string[] = ['item_id', 'product_name', 'department_name', 'price', 'stock_quantity'];
 
-      rowsResult.forEach(product => {
+      products.forEach(product => {
         const colData: Array<string | number> = [];
         colData.push(product.item_id);
         colData.push(product.product_name);
@@ -94,15 +96,18 @@ export class Database {
   }
 
   // Returns total cost of product purchased
-  async updateStock(productId: number, unitsToBuy: number): Promise<{ product?: ProductData, unitsToBuy?: number, totalPrice?: number }> {
+  async decreaseStock(productId: number, unitsToBuy: number): Promise<{ product?: ProductData, unitsToBuy?: number, totalPrice?: number }> {
     try {
+      const product: ProductData = await this.getProductById(productId);
+      
       if (await this.stockExists(productId, unitsToBuy)) {
         const product: ProductData = await this.getProductById(productId).then((item: ProductData) => {
           return item;
         });
         const newStock: number = product.stock_quantity - unitsToBuy;
         const totalPrice: number = unitsToBuy * product.price;
-        await this.connection.query("UPDATE products SET ? WHERE ?",
+        await this.connection.query(
+          "UPDATE products SET ? WHERE ?",
           [
             {
               stock_quantity: newStock,
@@ -121,15 +126,21 @@ export class Database {
     }
   }
 
-  // query(sql, args) {
-  //   return new Promise((resolve, reject) => {
-  //     this.connection.query('SELECT * FROM bids', (err, rows) => {
-  //       if (err) reject(err);
-  //       resolve(rows);
-  //     });
-  //   });
-  // }
+  printLowStockProducts(): void {
+    this.connection.query(
+      "SELECT * from products WHERE stock_quantity < 5;",
+      (err: mysqlTypes.MysqlError, products: ProductData[]) => {
+        if (err) return console.log(err);
+        this.printProducts(products);
+      });
+  }
 
+  incrementInventory(itemId: number, incrementAmount: number) {
+    this.connection.query(
+      "UPDATE products SET stock_quantity = stock_quantity + " + incrementAmount + " WHERE item_id = " + itemId + ";"
+    );
+  }
+  
   close(): void {
     this.connection.end((err: mysqlTypes.MysqlError) => {
       if (err) {

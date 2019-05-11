@@ -15,13 +15,14 @@ class Database {
         });
     }
     async printAllProducts() {
+        const allProducts = await this.getAllProducts();
+        this.printProducts(allProducts);
+    }
+    async printProducts(products) {
         try {
-            const rowsResult = await this.getAllProducts().then((rows) => {
-                return rows;
-            });
             const values = [];
             const headers = ['item_id', 'product_name', 'department_name', 'price', 'stock_quantity'];
-            rowsResult.forEach(product => {
+            products.forEach(product => {
                 const colData = [];
                 colData.push(product.item_id);
                 colData.push(product.product_name);
@@ -73,7 +74,7 @@ class Database {
             return false;
         }
     }
-    // Returns total price
+    // Returns total cost of product purchased
     async updateStock(productId, unitsToBuy) {
         try {
             if (await this.stockExists(productId, unitsToBuy)) {
@@ -101,14 +102,13 @@ class Database {
             return {};
         }
     }
-    // query(sql, args) {
-    //   return new Promise((resolve, reject) => {
-    //     this.connection.query('SELECT * FROM bids', (err, rows) => {
-    //       if (err) reject(err);
-    //       resolve(rows);
-    //     });
-    //   });
-    // }
+    printLowStockProducts() {
+        this.connection.query("SELECT * from products WHERE stock_quantity < 5;", (err, products) => {
+            if (err)
+                return console.log(err);
+            this.printProducts(products);
+        });
+    }
     close() {
         this.connection.end((err) => {
             if (err) {

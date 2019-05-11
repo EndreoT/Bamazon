@@ -11,6 +11,7 @@ export declare class Database {
     constructor(config: mysqlTypes.ConnectionConfig);
     getAllProducts(): Promise<ProductData[]>;
     printAllProducts(): Promise<void>;
+    printProducts(products: ProductData[]): Promise<void>;
     getProductById(productId: number): Promise<ProductData>;
     productExists(productId: number): Promise<boolean>;
     stockExists(productId: number, unitsToBuy: number): Promise<boolean>;
@@ -19,6 +20,7 @@ export declare class Database {
         unitsToBuy?: number;
         totalPrice?: number;
     }>;
+    printLowStockProducts(): void;
     close(): void;
 }
 export {};

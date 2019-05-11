@@ -13,7 +13,7 @@ const config = {
 };
 
 
-async function main() {
+async function main(): Promise<void> {
   const database = new Database(config);
   await database.printAllProducts();
   
@@ -33,7 +33,7 @@ async function main() {
     });
 }
 
-function validateProductId(productId: number, database: Database) {
+function validateProductId(productId: number, database: Database): void {
   database.productExists(productId).then((response: boolean)=> {
     if (response) {
       selectProductQuantity(productId, database);
@@ -44,7 +44,7 @@ function validateProductId(productId: number, database: Database) {
   });
 }
 
-function selectProductQuantity(productId: number, database: Database) {
+function selectProductQuantity(productId: number, database: Database): void {
   inquirer.prompt({
     name: "units",
     type: "number",
@@ -67,7 +67,7 @@ function selectProductQuantity(productId: number, database: Database) {
   });
 }
 
-async function makePurchase(productId: number, units: number, database: Database) {
+async function makePurchase(productId: number, units: number, database: Database): Promise<void> {
   const result = await database.updateStock(productId, units);
   if (result.product) {
     console.log("====================================");

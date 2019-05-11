@@ -29,7 +29,7 @@ async function main() {
     });
 }
 function validateProductId(productId, database) {
-    database.productExists(productId).then(response => {
+    database.productExists(productId).then((response) => {
         if (response) {
             selectProductQuantity(productId, database);
         }
