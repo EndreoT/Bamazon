@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const database_1 = require("./database");
-const utils_1 = require("./utils");
 const inquirer = require('inquirer');
 require('console.table');
+const database_1 = require("./database");
+const utils_1 = require("./utils");
 var Choices;
 (function (Choices) {
     Choices["VIEW_PRODUCTS"] = "View Products for Sale";

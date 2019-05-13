@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const database_1 = require("./database");
-const utils_1 = require("./utils");
 const inquirer = require('inquirer');
 require('console.table');
+const database_1 = require("./database");
+const utils_1 = require("./utils");
 var Choices;
 (function (Choices) {
     Choices["SALES_BY_PRODUCT"] = "View Sales By Product";
@@ -20,7 +20,6 @@ async function main() {
     }).then((answer) => {
         switch (answer.action) {
             case Choices.SALES_BY_PRODUCT:
-                console.log('stats');
                 database.printStatsForSupervisor().then(() => {
                     database.close();
                 });
@@ -39,7 +38,7 @@ function createDepartment(database) {
         {
             name: "department_name",
             type: "input",
-            message: "Item name",
+            message: "Department name",
             validate(answer) {
                 return answer ? true : false;
             },

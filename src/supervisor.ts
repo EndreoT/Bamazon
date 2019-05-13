@@ -1,12 +1,12 @@
-import { Database } from './database';
-import { config, ProductShape, isInteger } from './utils';
-
 const inquirer = require('inquirer');
 require('console.table');
 
+import { Database } from './database';
+import { config, ProductShape, isInteger } from './utils';
+
 
 enum Choices {
- SALES_BY_PRODUCT = 'View Sales By Product',
+  SALES_BY_PRODUCT = 'View Sales By Product',
   CREATE_DEPARTMENT = 'Create New Department',
 }
 
@@ -23,7 +23,6 @@ async function main(): Promise<void> {
       switch (answer.action) {
 
         case Choices.SALES_BY_PRODUCT:
-          console.log('stats')
           database.printStatsForSupervisor().then(() => {
             database.close();
           });
@@ -45,9 +44,9 @@ function createDepartment(database: Database) {
     {
       name: "department_name",
       type: "input",
-      message: "Item name",
+      message: "Department name",
       validate(answer: string) {
-        return answer ? true : false; 
+        return answer ? true : false;
       },
     },
     {
@@ -55,10 +54,10 @@ function createDepartment(database: Database) {
       type: "number",
       message: "Over head costs for department",
       validate(answer: number) {
-        return isInteger(answer); 
+        return isInteger(answer);
       },
     },
-  ]).then((answer: {department_name: string, over_head_costs: number}) => {
+  ]).then((answer: { department_name: string, over_head_costs: number }) => {
     database.addDepartment(answer).then(() => {
       database.close();
     });

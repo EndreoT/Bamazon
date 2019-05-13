@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const database_1 = require("./database");
-const utils_1 = require("./utils");
 const inquirer = require('inquirer');
 require('console.table');
+const database_1 = require("./database");
+const utils_1 = require("./utils");
 async function main() {
     const database = new database_1.Database(utils_1.config);
     await database.printAllProducts();

@@ -1,8 +1,8 @@
-import { Database } from './database';
-import { config, isInteger, ProductShape } from './utils';
-
 const inquirer = require('inquirer');
 require('console.table');
+
+import { Database } from './database';
+import { config, isInteger, ProductShape } from './utils';
 
 
 enum Choices {

@@ -36,15 +36,15 @@ class Database {
                 headers.push(item);
             });
         }
-        const values = [];
+        const rows = [];
         products.forEach((product) => {
             const colData = [];
             for (let i = 0; i < headers.length; i++) {
                 colData.push(product[headers[i]]);
             }
-            values.push(colData);
+            rows.push(colData);
         });
-        console.table(headers, values);
+        console.table(headers, rows);
     }
     // Checks if product exists in DB
     async productExists(productId) {
