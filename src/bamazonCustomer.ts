@@ -1,32 +1,21 @@
 import { Database } from './database';
+import { config, isInteger } from './utils';
 
 const inquirer = require('inquirer');
 require('console.table');
 
 
-const config = {
-  host: 'localhost',
-  port: 3306,
-  user: 'root',
-  password: '1234',
-  database: 'bamazon',
-};
-
-
 async function main(): Promise<void> {
   const database = new Database(config);
   await database.printAllProducts();
-  
-  inquirer
-    .prompt({
+
+  inquirer.prompt(
+    {
       name: "id",
       type: "number",
       message: "Choose an item id to purchase",
       validate(answer: number) {
-        if (!answer) {
-          return false;
-        }
-        return Number.isInteger(answer);
+        return isInteger(answer);
       },
     }).then((answer: { id: number }) => {
       validateProductId(answer.id, database);
@@ -34,7 +23,7 @@ async function main(): Promise<void> {
 }
 
 function validateProductId(productId: number, database: Database): void {
-  database.productExists(productId).then((response: boolean)=> {
+  database.productExists(productId).then((response: boolean) => {
     if (response) {
       selectProductQuantity(productId, database);
     } else {
@@ -50,10 +39,7 @@ function selectProductQuantity(productId: number, database: Database): void {
     type: "number",
     message: "Choose a number of units to purchase",
     validate(answer: number) {
-      if (!answer) {
-        return false;
-      }
-      return Number.isInteger(answer);
+      return isInteger(answer);
     },
   }).then((answer: { units: number }) => {
     database.stockExists(productId, answer.units).then((response: boolean) => {
@@ -80,8 +66,10 @@ async function makePurchase(productId: number, units: number, database: Database
         'Cost': result.totalPrice,
       },
     ]);
+  } else {
+    console.log('Transaction failed.');
   }
- 
+
   database.close();
 }
 

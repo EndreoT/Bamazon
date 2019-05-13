@@ -4,13 +4,6 @@ const database_1 = require("./database");
 const utils_1 = require("./utils");
 const inquirer = require('inquirer');
 require('console.table');
-const config = {
-    host: 'localhost',
-    port: 3306,
-    user: 'root',
-    password: '1234',
-    database: 'bamazon',
-};
 var Choices;
 (function (Choices) {
     Choices["VIEW_PRODUCTS"] = "View Products for Sale";
@@ -19,7 +12,7 @@ var Choices;
     Choices["ADD_PRODUCT"] = "Add New Product";
 })(Choices || (Choices = {}));
 async function main() {
-    const database = new database_1.Database(config);
+    const database = new database_1.Database(utils_1.config);
     inquirer
         .prompt({
         name: "action",
@@ -51,7 +44,7 @@ function incrementInventory(database) {
         {
             name: "id",
             type: "number",
-            message: "Choose a product id",
+            message: "Choose a product id: ",
             validate(answer) {
                 return utils_1.isInteger(answer);
             },
@@ -59,7 +52,7 @@ function incrementInventory(database) {
         {
             name: "addToStock",
             type: "number",
-            message: "Choose the number of units add to stock",
+            message: "Choose the number of units to add to stock: ",
             validate(answer) {
                 return utils_1.isInteger(answer);
             },
@@ -71,7 +64,7 @@ function incrementInventory(database) {
                 database.increaseInventory(productId, answer.addToStock);
             }
             else {
-                console.log('Ttem with id ' + productId + ' does not exist.');
+                console.log('Item with id ' + productId + ' does not exist.');
                 database.close();
             }
         });

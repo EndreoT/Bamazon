@@ -27,7 +27,7 @@ class Database {
         const allProducts = await this.getAllProducts();
         this.printProducts(allProducts);
     }
-    // Prints product argments in a nicely formatted  table
+    // Prints product argments in a nicely formatted table
     printProducts(products) {
         const values = [];
         const headers = ['item_id', 'product_name', 'department_name', 'price', 'stock_quantity'];
@@ -76,8 +76,7 @@ class Database {
     // Decreases stock for an item and returns trasaction information
     async decreaseStock(productId, unitsToBuy) {
         try {
-            // const product: ProductData = await this.getProductById(productId);
-            if (await this.stockExists(productId, unitsToBuy)) {
+            if (await this.stockExists(productId, unitsToBuy) && unitsToBuy >= 0) {
                 const product = await this.getProductById(productId).then((item) => {
                     return item;
                 });
@@ -111,11 +110,28 @@ class Database {
         });
     }
     // Increase an existing product's inventory by a given amount
-    increaseInventory(itemId, incrementAmount) {
-        this.connection.query("UPDATE products SET stock_quantity = stock_quantity + " + incrementAmount + " WHERE item_id = " + itemId + ";");
+    increaseInventory(itemId, amountToAdd) {
+        if (amountToAdd < 0) {
+            console.log('amountToAdd must be >= 0');
+            return;
+        }
+        this.connection.query("UPDATE products SET stock_quantity = stock_quantity + " + amountToAdd + " WHERE item_id = " + itemId + ";", (err, res) => {
+            if (err) {
+                return console.log(err);
+            }
+            console.log(res.affectedRows + " product inserted!\n");
+        });
     }
     // Add a new product to the DB
     addNewProduct(product) {
+        if (product.price < 0) {
+            console.log('price must be >= 0');
+            return;
+        }
+        if (product.stock_quantity < 0) {
+            console.log('stock_quantity must be >= 0');
+            return;
+        }
         this.connection.query("INSERT INTO products SET ?", product, (err, res) => {
             if (err) {
                 return console.log(err);

@@ -1,17 +1,9 @@
 import { Database } from './database';
-import { isInteger, ProductShape } from './utils';
+import { config, isInteger, ProductShape } from './utils';
 
 const inquirer = require('inquirer');
 require('console.table');
 
-
-const config = {
-  host: 'localhost',
-  port: 3306,
-  user: 'root',
-  password: '1234',
-  database: 'bamazon',
-};
 
 enum Choices {
   VIEW_PRODUCTS = 'View Products for Sale',
@@ -60,7 +52,7 @@ function incrementInventory(database: Database) {
     {
       name: "id",
       type: "number",
-      message: "Choose a product id",
+      message: "Choose a product id: ",
       validate(answer: number) {
         return isInteger(answer);
       },
@@ -68,7 +60,7 @@ function incrementInventory(database: Database) {
     {
       name: "addToStock",
       type: "number",
-      message: "Choose the number of units add to stock",
+      message: "Choose the number of units to add to stock: ",
       validate(answer: number) {
         return isInteger(answer);
       },
@@ -79,7 +71,7 @@ function incrementInventory(database: Database) {
       if (response) {
         database.increaseInventory(productId, answer.addToStock);
       } else {
-        console.log('Ttem with id ' + productId + ' does not exist.');
+        console.log('Item with id ' + productId + ' does not exist.');
         database.close();
       }
     });

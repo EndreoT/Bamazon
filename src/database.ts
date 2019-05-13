@@ -1,4 +1,6 @@
+// Type definition for mysql
 import * as mysqlTypes from "../node_modules/@types/mysql";
+
 import mysql = require('mysql');
 
 import { ProductShape } from './utils';
@@ -10,6 +12,7 @@ interface ProductData {
   department_name: string;
   price: number;
   stock_quantity: number;
+  product_sales: number;
 }
 
 export class Database {
@@ -44,23 +47,23 @@ export class Database {
     this.printProducts(allProducts);
   }
 
-  // Prints product argments in a nicely formatted  table
+  // Prints product argments in a nicely formatted table
   printProducts(products: ProductData[]): void {
-      const values: any[] = [];
+    const values: any[] = [];
 
-      const headers: string[] = ['item_id', 'product_name', 'department_name', 'price', 'stock_quantity'];
+    const headers: string[] = ['item_id', 'product_name', 'department_name', 'price', 'stock_quantity'];
 
-      products.forEach(product => {
-        const colData: Array<string | number> = [];
-        colData.push(product.item_id);
-        colData.push(product.product_name);
-        colData.push(product.department_name);
-        colData.push(product.price);
-        colData.push(product.stock_quantity);
-        values.push(colData);
-      });
+    products.forEach(product => {
+      const colData: Array<string | number> = [];
+      colData.push(product.item_id);
+      colData.push(product.product_name);
+      colData.push(product.department_name);
+      colData.push(product.price);
+      colData.push(product.stock_quantity);
+      values.push(colData);
+    });
 
-      console.table(headers, values);
+    console.table(headers, values);
   }
 
   // Checks if product exists in DB
@@ -99,19 +102,19 @@ export class Database {
   // Decreases stock for an item and returns trasaction information
   async decreaseStock(productId: number, unitsToBuy: number): Promise<{ product?: ProductData, unitsToBuy?: number, totalPrice?: number }> {
     try {
-      // const product: ProductData = await this.getProductById(productId);
-
-      if (await this.stockExists(productId, unitsToBuy)) {
+      if (await this.stockExists(productId, unitsToBuy) && unitsToBuy >= 0) {
         const product: ProductData = await this.getProductById(productId).then((item: ProductData) => {
           return item;
         });
         const newStock: number = product.stock_quantity - unitsToBuy;
         const totalPrice: number = unitsToBuy * product.price;
+        const newProductSales: number = product.product_sales + totalPrice;
         await this.connection.query(
           "UPDATE products SET ? WHERE ?",
           [
             {
               stock_quantity: newStock,
+              product_sales: newProductSales,
             },
             {
               item_id: productId,
@@ -138,14 +141,32 @@ export class Database {
   }
 
   // Increase an existing product's inventory by a given amount
-  increaseInventory(itemId: number, incrementAmount: number): void {
+  increaseInventory(itemId: number, amountToAdd: number): void {
+    if (amountToAdd < 0) {
+      console.log('amountToAdd must be >= 0');
+      return;
+    }
     this.connection.query(
-      "UPDATE products SET stock_quantity = stock_quantity + " + incrementAmount + " WHERE item_id = " + itemId + ";"
+      "UPDATE products SET stock_quantity = stock_quantity + " + amountToAdd + " WHERE item_id = " + itemId + ";",
+      (err, res) => {
+        if (err) {
+          return console.log(err);
+        }
+        console.log(res.affectedRows + " product inserted!\n");
+      }
     );
   }
 
   // Add a new product to the DB
   addNewProduct(product: ProductShape): void {
+    if (product.price < 0) {
+      console.log('price must be >= 0');
+      return;
+    }
+    if (product.stock_quantity < 0) {
+      console.log('stock_quantity must be >= 0');
+      return;
+    }
     this.connection.query(
       "INSERT INTO products SET ?",
       product,

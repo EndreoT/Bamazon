@@ -1,28 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const database_1 = require("./database");
+const utils_1 = require("./utils");
 const inquirer = require('inquirer');
 require('console.table');
-const config = {
-    host: 'localhost',
-    port: 3306,
-    user: 'root',
-    password: '1234',
-    database: 'bamazon',
-};
 async function main() {
-    const database = new database_1.Database(config);
+    const database = new database_1.Database(utils_1.config);
     await database.printAllProducts();
-    inquirer
-        .prompt({
+    inquirer.prompt({
         name: "id",
         type: "number",
         message: "Choose an item id to purchase",
         validate(answer) {
-            if (!answer) {
-                return false;
-            }
-            return Number.isInteger(answer);
+            return utils_1.isInteger(answer);
         },
     }).then((answer) => {
         validateProductId(answer.id, database);
@@ -45,10 +35,7 @@ function selectProductQuantity(productId, database) {
         type: "number",
         message: "Choose a number of units to purchase",
         validate(answer) {
-            if (!answer) {
-                return false;
-            }
-            return Number.isInteger(answer);
+            return utils_1.isInteger(answer);
         },
     }).then((answer) => {
         database.stockExists(productId, answer.units).then((response) => {
@@ -75,6 +62,9 @@ async function makePurchase(productId, units, database) {
                 'Cost': result.totalPrice,
             },
         ]);
+    }
+    else {
+        console.log('Transaction failed.');
     }
     database.close();
 }

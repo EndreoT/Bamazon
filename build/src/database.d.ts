@@ -22,7 +22,7 @@ export declare class Database {
         totalPrice?: number;
     }>;
     printLowStockProducts(): void;
-    increaseInventory(itemId: number, incrementAmount: number): void;
+    increaseInventory(itemId: number, amountToAdd: number): void;
     addNewProduct(product: ProductShape): void;
     close(): void;
 }
