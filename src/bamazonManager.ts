@@ -25,7 +25,7 @@ async function main(): Promise<void> {
       switch (answer.action) {
 
         case Choices.VIEW_PRODUCTS:
-          database.printAllProducts().then(() => {
+          database.printAllProducts(true).then(() => {
             database.close();
           });
           break;
@@ -107,7 +107,7 @@ function addNewProduct(database: Database) {
       type: "number",
       message: "Price per unit",
       validate(answer: number) {
-        return isInteger(answer);
+        return !isNaN(answer);
       },
     },
     {
@@ -119,6 +119,7 @@ function addNewProduct(database: Database) {
       },
     },
   ]).then((answer: ProductShape) => {
+    answer.product_sales = 0;
     database.addNewProduct(answer).then(() => {
       database.close();
     });

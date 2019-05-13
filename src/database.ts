@@ -33,10 +33,14 @@ export class Database {
     });
   }
 
-  getAllProducts(): Promise<ProductData[]> {
+  getAllProducts(isManager: boolean): Promise<ProductData[]> {
+    let query = 'SELECT item_id, product_name, department_name, price, stock_quantity FROM products';
+    if (isManager) {
+      query = 'SELECT * FROM products';
+    }
     return new Promise((resolve, reject) => {
       this.connection.query(
-        'SELECT * FROM products', 
+        query, 
         (err: mysqlTypes.MysqlError, rows: ProductData[]) => {
         if (err) reject(err);
         resolve(rows);
@@ -44,8 +48,8 @@ export class Database {
     });
   }
 
-  async printAllProducts(): Promise<void> {
-    const allProducts: ProductData[] = await this.getAllProducts();
+  async printAllProducts(isManager: boolean): Promise<void> {
+    const allProducts: ProductData[] = await this.getAllProducts(isManager);
     this.printProducts(allProducts);
   }
 
@@ -200,6 +204,7 @@ export class Database {
     });
   }
 
+  // Shows stats for each department
   printStatsForSupervisor(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.connection.query(
@@ -223,7 +228,7 @@ export class Database {
     });
   }
 
-  addDepartment(department: { department_name: string, over_head_costs: number }): Promise<void> {
+  addNewDepartment(department: { department_name: string, over_head_costs: number }): Promise<void> {
     return new Promise((resolve, reject) => {
       this.connection.query(
         "INSERT INTO departments SET ?",

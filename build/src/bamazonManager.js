@@ -22,7 +22,7 @@ async function main() {
     }).then((answer) => {
         switch (answer.action) {
             case Choices.VIEW_PRODUCTS:
-                database.printAllProducts().then(() => {
+                database.printAllProducts(true).then(() => {
                     database.close();
                 });
                 break;
@@ -99,7 +99,7 @@ function addNewProduct(database) {
             type: "number",
             message: "Price per unit",
             validate(answer) {
-                return utils_1.isInteger(answer);
+                return !isNaN(answer);
             },
         },
         {
@@ -111,6 +111,7 @@ function addNewProduct(database) {
             },
         },
     ]).then((answer) => {
+        answer.product_sales = 0;
         database.addNewProduct(answer).then(() => {
             database.close();
         });

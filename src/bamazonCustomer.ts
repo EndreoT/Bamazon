@@ -7,7 +7,7 @@ import { config, isInteger } from './utils';
 
 async function main(): Promise<void> {
   const database = new Database(config);
-  await database.printAllProducts();
+  await database.printAllProducts(false);
 
   inquirer.prompt(
     {

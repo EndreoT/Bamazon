@@ -58,7 +58,7 @@ function createDepartment(database: Database) {
       },
     },
   ]).then((answer: { department_name: string, over_head_costs: number }) => {
-    database.addDepartment(answer).then(() => {
+    database.addNewDepartment(answer).then(() => {
       database.close();
     });
   });

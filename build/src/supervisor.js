@@ -52,7 +52,7 @@ function createDepartment(database) {
             },
         },
     ]).then((answer) => {
-        database.addDepartment(answer).then(() => {
+        database.addNewDepartment(answer).then(() => {
             database.close();
         });
     });

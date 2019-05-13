@@ -6,7 +6,7 @@ const database_1 = require("./database");
 const utils_1 = require("./utils");
 async function main() {
     const database = new database_1.Database(utils_1.config);
-    await database.printAllProducts();
+    await database.printAllProducts(false);
     inquirer.prompt({
         name: "id",
         type: "number",

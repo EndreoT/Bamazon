@@ -14,17 +14,21 @@ class Database {
             });
         });
     }
-    getAllProducts() {
+    getAllProducts(isManager) {
+        let query = 'SELECT item_id, product_name, department_name, price, stock_quantity FROM products';
+        if (isManager) {
+            query = 'SELECT * FROM products';
+        }
         return new Promise((resolve, reject) => {
-            this.connection.query('SELECT * FROM products', (err, rows) => {
+            this.connection.query(query, (err, rows) => {
                 if (err)
                     reject(err);
                 resolve(rows);
             });
         });
     }
-    async printAllProducts() {
-        const allProducts = await this.getAllProducts();
+    async printAllProducts(isManager) {
+        const allProducts = await this.getAllProducts(isManager);
         this.printProducts(allProducts);
     }
     // Prints product argments in a nicely formatted table
@@ -159,6 +163,7 @@ class Database {
             });
         });
     }
+    // Shows stats for each department
     printStatsForSupervisor() {
         return new Promise((resolve, reject) => {
             this.connection.query("WITH previous_query AS ( "
@@ -179,7 +184,7 @@ class Database {
             });
         });
     }
-    addDepartment(department) {
+    addNewDepartment(department) {
         return new Promise((resolve, reject) => {
             this.connection.query("INSERT INTO departments SET ?", department, (err, res) => {
                 if (err) {

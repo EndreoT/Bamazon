@@ -12,8 +12,8 @@ export declare class Database {
     connection: mysqlTypes.Connection;
     constructor(config: mysqlTypes.ConnectionConfig);
     getProductById(productId: number): Promise<ProductData>;
-    getAllProducts(): Promise<ProductData[]>;
-    printAllProducts(): Promise<void>;
+    getAllProducts(isManager: boolean): Promise<ProductData[]>;
+    printAllProducts(isManager: boolean): Promise<void>;
     printProducts(products: ProductData[] | SupervisorQueryShape[]): Promise<void>;
     productExists(productId: number): Promise<boolean>;
     stockExists(productId: number, unitsToBuy: number): Promise<boolean>;
@@ -26,7 +26,7 @@ export declare class Database {
     increaseInventory(itemId: number, amountToAdd: number): Promise<void>;
     addNewProduct(product: ProductShape): Promise<void>;
     printStatsForSupervisor(): Promise<void>;
-    addDepartment(department: {
+    addNewDepartment(department: {
         department_name: string;
         over_head_costs: number;
     }): Promise<void>;
