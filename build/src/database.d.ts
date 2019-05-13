@@ -1,5 +1,5 @@
 import * as mysqlTypes from "../node_modules/@types/mysql";
-import { ProductShape } from './utils';
+import { ProductShape, SupervisorQueryShape } from './utils';
 interface ProductData {
     item_id: number;
     product_name: string;
@@ -14,7 +14,7 @@ export declare class Database {
     getProductById(productId: number): Promise<ProductData>;
     getAllProducts(): Promise<ProductData[]>;
     printAllProducts(): Promise<void>;
-    printProducts(products: ProductData[]): Promise<void>;
+    printProducts(products: ProductData[] | SupervisorQueryShape[]): Promise<void>;
     productExists(productId: number): Promise<boolean>;
     stockExists(productId: number, unitsToBuy: number): Promise<boolean>;
     decreaseStock(productId: number, unitsToBuy: number): Promise<{
@@ -26,6 +26,10 @@ export declare class Database {
     increaseInventory(itemId: number, amountToAdd: number): Promise<void>;
     addNewProduct(product: ProductShape): Promise<void>;
     printStatsForSupervisor(): Promise<void>;
+    addDepartment(department: {
+        department_name: string;
+        over_head_costs: number;
+    }): Promise<void>;
     close(): void;
 }
 export {};

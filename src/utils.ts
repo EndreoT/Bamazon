@@ -23,3 +23,10 @@ export interface ProductShape {
   product_sales: number;
 }
 
+export interface SupervisorQueryShape {
+  department_id: number;
+  department_name: string;
+  over_head_costs: number;
+  product_sales: number;
+  total_profit:number;
+}

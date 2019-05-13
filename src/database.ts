@@ -3,7 +3,7 @@ import * as mysqlTypes from "../node_modules/@types/mysql";
 
 import mysql = require('mysql');
 
-import { ProductShape } from './utils';
+import { ProductShape, SupervisorQueryShape } from './utils';
 
 
 interface ProductData {
@@ -48,19 +48,23 @@ export class Database {
   }
 
   // Prints product argments in a nicely formatted table
-  async printProducts(products: ProductData[]): Promise<void> {
+  async printProducts(products: ProductData[] | SupervisorQueryShape[]): Promise<void> {
+    const headers: string[] = [];
+    if (products.length) {
+      const product: any = products[0];
+      Object.keys(product).forEach((item: string) => {
+        headers.push(item);
+      });
+    }
+
     const values: any[] = [];
 
-    const headers: string[] = ['item_id', 'product_name', 'department_name', 'price', 'stock_quantity', 'product_sales'];
-
-    products.forEach(product => {
+    products.forEach((product: any) => {
       const colData: Array<string | number> = [];
-      colData.push(product.item_id);
-      colData.push(product.product_name);
-      colData.push(product.department_name);
-      colData.push(product.price);
-      colData.push(product.stock_quantity);
-      colData.push(product.product_sales);
+      for (let i = 0; i < headers.length; i++) {
+        colData.push(product[headers[i]]);
+      }
+
       values.push(colData);
     });
 
@@ -197,22 +201,39 @@ export class Database {
   printStatsForSupervisor(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.connection.query(
-        "WITH previous_query AS ("
-        + "SELECT department_name, SUM(product_sales) AS 'product_sales'"
-        + "FROM products"
-        + "GROUP BY 1"
-        + ")"
-        + "SELECT departments.*, previous_query.product_sales, (previous_query.product_sales - departments.over_head_costs) AS total_profit"
-        + "FROM departments"
-        + "JOIN previous_query"
-        + "WHERE departments.department_name = previous_query.department_name"
+        "WITH previous_query AS ( " 
+        + "SELECT department_name, SUM(product_sales) AS 'product_sales' " 
+        + "FROM products " 
+        + "GROUP BY 1 " 
+        + ") " 
+        + "SELECT departments.*, previous_query.product_sales, (previous_query.product_sales - departments.over_head_costs) AS total_profit " 
+        + "FROM departments " 
+        + "LEFT JOIN previous_query " 
+        + "ON departments.department_name = previous_query.department_name " 
         + "GROUP BY department_id;"
-      ), (err: mysqlTypes.MysqlError) => {
+      , (err: mysqlTypes.MysqlError, res: SupervisorQueryShape[]) => {
         if (err) {
           reject(err);
         }
+        this.printProducts(res);
         resolve();
-      };
+      });
+    });
+  }
+
+  addDepartment(department: {department_name: string, over_head_costs: number}): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.connection.query(
+        "INSERT INTO departments SET ?",
+        department,
+        (err, res) => {
+          if (err) {
+            reject(err);
+          }
+          console.log(res.affectedRows + " product inserted!\n");
+          resolve();
+        }
+      );
     });
   }
 

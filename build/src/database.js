@@ -29,16 +29,19 @@ class Database {
     }
     // Prints product argments in a nicely formatted table
     async printProducts(products) {
+        const headers = [];
+        if (products.length) {
+            const product = products[0];
+            Object.keys(product).forEach((item) => {
+                headers.push(item);
+            });
+        }
         const values = [];
-        const headers = ['item_id', 'product_name', 'department_name', 'price', 'stock_quantity', 'product_sales'];
-        products.forEach(product => {
+        products.forEach((product) => {
             const colData = [];
-            colData.push(product.item_id);
-            colData.push(product.product_name);
-            colData.push(product.department_name);
-            colData.push(product.price);
-            colData.push(product.stock_quantity);
-            colData.push(product.product_sales);
+            for (let i = 0; i < headers.length; i++) {
+                colData.push(product[headers[i]]);
+            }
             values.push(colData);
         });
         console.table(headers, values);
@@ -158,21 +161,33 @@ class Database {
     }
     printStatsForSupervisor() {
         return new Promise((resolve, reject) => {
-            this.connection.query("WITH previous_query AS ("
-                + "SELECT department_name, SUM(product_sales) AS 'product_sales'"
-                + "FROM products"
-                + "GROUP BY 1"
-                + ")"
-                + "SELECT departments.*, previous_query.product_sales, (previous_query.product_sales - departments.over_head_costs) AS total_profit"
-                + "FROM departments"
-                + "JOIN previous_query"
-                + "WHERE departments.department_name = previous_query.department_name"
-                + "GROUP BY department_id;"), (err) => {
+            this.connection.query("WITH previous_query AS ( "
+                + "SELECT department_name, SUM(product_sales) AS 'product_sales' "
+                + "FROM products "
+                + "GROUP BY 1 "
+                + ") "
+                + "SELECT departments.*, previous_query.product_sales, (previous_query.product_sales - departments.over_head_costs) AS total_profit "
+                + "FROM departments "
+                + "LEFT JOIN previous_query "
+                + "ON departments.department_name = previous_query.department_name "
+                + "GROUP BY department_id;", (err, res) => {
                 if (err) {
                     reject(err);
                 }
+                this.printProducts(res);
                 resolve();
-            };
+            });
+        });
+    }
+    addDepartment(department) {
+        return new Promise((resolve, reject) => {
+            this.connection.query("INSERT INTO departments SET ?", department, (err, res) => {
+                if (err) {
+                    reject(err);
+                }
+                console.log(res.affectedRows + " product inserted!\n");
+                resolve();
+            });
         });
     }
     // End connection to DB
