@@ -28,9 +28,9 @@ class Database {
         this.printProducts(allProducts);
     }
     // Prints product argments in a nicely formatted table
-    printProducts(products) {
+    async printProducts(products) {
         const values = [];
-        const headers = ['item_id', 'product_name', 'department_name', 'price', 'stock_quantity'];
+        const headers = ['item_id', 'product_name', 'department_name', 'price', 'stock_quantity', 'product_sales'];
         products.forEach(product => {
             const colData = [];
             colData.push(product.item_id);
@@ -38,6 +38,7 @@ class Database {
             colData.push(product.department_name);
             colData.push(product.price);
             colData.push(product.stock_quantity);
+            colData.push(product.product_sales);
             values.push(colData);
         });
         console.table(headers, values);
@@ -82,9 +83,11 @@ class Database {
                 });
                 const newStock = product.stock_quantity - unitsToBuy;
                 const totalPrice = unitsToBuy * product.price;
+                const newProductSales = product.product_sales + totalPrice;
                 await this.connection.query("UPDATE products SET ? WHERE ?", [
                     {
                         stock_quantity: newStock,
+                        product_sales: newProductSales,
                     },
                     {
                         item_id: productId,
@@ -103,40 +106,73 @@ class Database {
     }
     // Displays all products with a stock_quantity < 5
     printLowStockProducts() {
-        this.connection.query("SELECT * from products WHERE stock_quantity < 5;", (err, products) => {
-            if (err)
-                return console.log(err);
-            this.printProducts(products);
+        return new Promise((resolve, reject) => {
+            this.connection.query("SELECT * from products WHERE stock_quantity < 5;", (err, products) => {
+                if (err)
+                    reject(err);
+                if (products.length) {
+                    this.printProducts(products);
+                }
+                else {
+                    console.log("There are no low stock products.");
+                }
+                resolve();
+            });
         });
     }
     // Increase an existing product's inventory by a given amount
     increaseInventory(itemId, amountToAdd) {
-        if (amountToAdd < 0) {
-            console.log('amountToAdd must be >= 0');
-            return;
-        }
-        this.connection.query("UPDATE products SET stock_quantity = stock_quantity + " + amountToAdd + " WHERE item_id = " + itemId + ";", (err, res) => {
-            if (err) {
-                return console.log(err);
+        return new Promise((resolve, reject) => {
+            if (amountToAdd < 0) {
+                console.log('amountToAdd must be >= 0');
+                return;
             }
-            console.log(res.affectedRows + " product inserted!\n");
+            this.connection.query("UPDATE products SET stock_quantity = stock_quantity + " + amountToAdd + " WHERE item_id = " + itemId + ";", (err, res) => {
+                if (err) {
+                    reject(err);
+                }
+                console.log(res.affectedRows + " product inserted!\n");
+                resolve();
+            });
         });
     }
     // Add a new product to the DB
     addNewProduct(product) {
-        if (product.price < 0) {
-            console.log('price must be >= 0');
-            return;
-        }
-        if (product.stock_quantity < 0) {
-            console.log('stock_quantity must be >= 0');
-            return;
-        }
-        this.connection.query("INSERT INTO products SET ?", product, (err, res) => {
-            if (err) {
-                return console.log(err);
+        return new Promise((resolve, reject) => {
+            if (product.price < 0) {
+                console.log('price must be >= 0');
+                reject();
             }
-            console.log(res.affectedRows + " product inserted!\n");
+            if (product.stock_quantity < 0) {
+                console.log('stock_quantity must be >= 0');
+                reject();
+            }
+            this.connection.query("INSERT INTO products SET ?", product, (err, res) => {
+                if (err) {
+                    reject(err);
+                }
+                console.log(res.affectedRows + " product inserted!\n");
+                resolve();
+            });
+        });
+    }
+    printStatsForSupervisor() {
+        return new Promise((resolve, reject) => {
+            this.connection.query("WITH previous_query AS ("
+                + "SELECT department_name, SUM(product_sales) AS 'product_sales'"
+                + "FROM products"
+                + "GROUP BY 1"
+                + ")"
+                + "SELECT departments.*, previous_query.product_sales, (previous_query.product_sales - departments.over_head_costs) AS total_profit"
+                + "FROM departments"
+                + "JOIN previous_query"
+                + "WHERE departments.department_name = previous_query.department_name"
+                + "GROUP BY department_id;"), (err) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve();
+            };
         });
     }
     // End connection to DB

@@ -48,10 +48,10 @@ export class Database {
   }
 
   // Prints product argments in a nicely formatted table
-  printProducts(products: ProductData[]): void {
+  async printProducts(products: ProductData[]): Promise<void> {
     const values: any[] = [];
 
-    const headers: string[] = ['item_id', 'product_name', 'department_name', 'price', 'stock_quantity'];
+    const headers: string[] = ['item_id', 'product_name', 'department_name', 'price', 'stock_quantity', 'product_sales'];
 
     products.forEach(product => {
       const colData: Array<string | number> = [];
@@ -60,6 +60,7 @@ export class Database {
       colData.push(product.department_name);
       colData.push(product.price);
       colData.push(product.stock_quantity);
+      colData.push(product.product_sales);
       values.push(colData);
     });
 
@@ -131,52 +132,88 @@ export class Database {
   }
 
   // Displays all products with a stock_quantity < 5
-  printLowStockProducts(): void {
-    this.connection.query(
-      "SELECT * from products WHERE stock_quantity < 5;",
-      (err: mysqlTypes.MysqlError, products: ProductData[]) => {
-        if (err) return console.log(err);
-        this.printProducts(products);
-      });
+  printLowStockProducts(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.connection.query(
+        "SELECT * from products WHERE stock_quantity < 5;",
+        (err: mysqlTypes.MysqlError, products: ProductData[]) => {
+          if (err) reject(err);
+          if (products.length) {
+            this.printProducts(products);
+          }
+          else {
+            console.log("There are no low stock products.")
+          }
+          resolve();
+        });
+    });
   }
 
   // Increase an existing product's inventory by a given amount
-  increaseInventory(itemId: number, amountToAdd: number): void {
-    if (amountToAdd < 0) {
-      console.log('amountToAdd must be >= 0');
-      return;
-    }
-    this.connection.query(
-      "UPDATE products SET stock_quantity = stock_quantity + " + amountToAdd + " WHERE item_id = " + itemId + ";",
-      (err, res) => {
-        if (err) {
-          return console.log(err);
-        }
-        console.log(res.affectedRows + " product inserted!\n");
+  increaseInventory(itemId: number, amountToAdd: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (amountToAdd < 0) {
+        console.log('amountToAdd must be >= 0');
+        return;
       }
-    );
+      this.connection.query(
+        "UPDATE products SET stock_quantity = stock_quantity + " + amountToAdd + " WHERE item_id = " + itemId + ";",
+        (err, res) => {
+          if (err) {
+            reject(err);
+          }
+          console.log(res.affectedRows + " product inserted!\n");
+          resolve();
+        }
+      );
+    });
   }
 
   // Add a new product to the DB
-  addNewProduct(product: ProductShape): void {
-    if (product.price < 0) {
-      console.log('price must be >= 0');
-      return;
-    }
-    if (product.stock_quantity < 0) {
-      console.log('stock_quantity must be >= 0');
-      return;
-    }
-    this.connection.query(
-      "INSERT INTO products SET ?",
-      product,
-      (err, res) => {
-        if (err) {
-          return console.log(err);
-        }
-        console.log(res.affectedRows + " product inserted!\n");
+  addNewProduct(product: ProductShape): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (product.price < 0) {
+        console.log('price must be >= 0');
+        reject();
       }
-    );
+      if (product.stock_quantity < 0) {
+        console.log('stock_quantity must be >= 0');
+        reject();
+      }
+      this.connection.query(
+        "INSERT INTO products SET ?",
+        product,
+        (err, res) => {
+          if (err) {
+            reject(err);
+          }
+          console.log(res.affectedRows + " product inserted!\n");
+          resolve();
+        }
+      );
+    });
+  }
+
+  printStatsForSupervisor(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.connection.query(
+        "WITH previous_query AS ("
+        + "SELECT department_name, SUM(product_sales) AS 'product_sales'"
+        + "FROM products"
+        + "GROUP BY 1"
+        + ")"
+        + "SELECT departments.*, previous_query.product_sales, (previous_query.product_sales - departments.over_head_costs) AS total_profit"
+        + "FROM departments"
+        + "JOIN previous_query"
+        + "WHERE departments.department_name = previous_query.department_name"
+        + "GROUP BY department_id;"
+      ), (err: mysqlTypes.MysqlError) => {
+        if (err) {
+          reject(err);
+        }
+        resolve();
+      };
+    });
   }
 
   // End connection to DB

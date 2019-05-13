@@ -6,6 +6,7 @@ interface ProductData {
     department_name: string;
     price: number;
     stock_quantity: number;
+    product_sales: number;
 }
 export declare class Database {
     connection: mysqlTypes.Connection;
@@ -13,7 +14,7 @@ export declare class Database {
     getProductById(productId: number): Promise<ProductData>;
     getAllProducts(): Promise<ProductData[]>;
     printAllProducts(): Promise<void>;
-    printProducts(products: ProductData[]): void;
+    printProducts(products: ProductData[]): Promise<void>;
     productExists(productId: number): Promise<boolean>;
     stockExists(productId: number, unitsToBuy: number): Promise<boolean>;
     decreaseStock(productId: number, unitsToBuy: number): Promise<{
@@ -21,9 +22,10 @@ export declare class Database {
         unitsToBuy?: number;
         totalPrice?: number;
     }>;
-    printLowStockProducts(): void;
-    increaseInventory(itemId: number, amountToAdd: number): void;
-    addNewProduct(product: ProductShape): void;
+    printLowStockProducts(): Promise<void>;
+    increaseInventory(itemId: number, amountToAdd: number): Promise<void>;
+    addNewProduct(product: ProductShape): Promise<void>;
+    printStatsForSupervisor(): Promise<void>;
     close(): void;
 }
 export {};

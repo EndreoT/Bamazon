@@ -25,11 +25,15 @@ async function main(): Promise<void> {
       switch (answer.action) {
 
         case Choices.VIEW_PRODUCTS:
-          database.printAllProducts();
+          database.printAllProducts().then(() => {
+            database.close();
+          });
           break;
 
         case Choices.LOW_INVENTORY:
-          database.printLowStockProducts();
+          database.printLowStockProducts().then(() => {
+            database.close();
+          });
           break;
 
         case Choices.INC_INVENTORY:
@@ -69,7 +73,9 @@ function incrementInventory(database: Database) {
     const productId = answer.id;
     database.productExists(productId).then((response: boolean) => {
       if (response) {
-        database.increaseInventory(productId, answer.addToStock);
+        database.increaseInventory(productId, answer.addToStock).then(() => {
+          database.close();
+        });
       } else {
         console.log('Item with id ' + productId + ' does not exist.');
         database.close();
@@ -113,7 +119,9 @@ function addNewProduct(database: Database) {
       },
     },
   ]).then((answer: ProductShape) => {
-    database.addNewProduct(answer);
+    database.addNewProduct(answer).then(() => {
+      database.close();
+    });
   });
 }
 
