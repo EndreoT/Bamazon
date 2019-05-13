@@ -21,7 +21,8 @@ cd path/to/Word-Guess-Game
 (You may have to run 'npx gts init')
 npm install
 ```
-  
+Next, add and execute the schema SQL files in MySQL Workbench, then do the same with the seeds SQL files to create a database for sandbox use.
+
 ## Compile typescript to javascript
 ```
 npm run compile
