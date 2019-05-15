@@ -15,13 +15,14 @@ There are three levels of interaction with the Bamazon store: customers, manager
 * Supervisors view department information and add new departments.
 
 ## Installation
+You will need a MySQL database. One option is https://dev.mysql.com/downloads/
 ```
 git clone <Word-Guess-Game url>
 cd path/to/Word-Guess-Game
 (You may have to run 'npx gts init')
 npm install
 ```
-Next, add and execute the schema SQL files in MySQL Workbench, then do the same with the seeds SQL files to create a database for sandbox use.
+Next, add and execute the schema SQL files (MySQL Workbench is handy for this task), then do the same with the seeds SQL files to create a database for sandbox use.
 
 ## Compile typescript to javascript
 ```
@@ -30,9 +31,9 @@ npm run compile
 
 ## Run 
 ```
-cd build/src
+node build/src <filename>
 ```
-Choose from one of the three files:
+Where filename is from one of the three following files in build/src:
 ```
 bamazonCustomer.js
 bamazonManager.js
