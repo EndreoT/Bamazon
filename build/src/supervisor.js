@@ -6,7 +6,7 @@ const database_1 = require("./database");
 const utils_1 = require("./utils");
 var Choices;
 (function (Choices) {
-    Choices["SALES_BY_PRODUCT"] = "View Sales By Product";
+    Choices["SALES_BY_PRODUCT"] = "View Sales By department";
     Choices["CREATE_DEPARTMENT"] = "Create New Department";
 })(Choices || (Choices = {}));
 async function main() {
