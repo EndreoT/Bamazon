@@ -31,7 +31,8 @@ npm run compile
 
 ## Run 
 ```
-node build/src <filename>
+cd build/src
+node <filename>
 ```
 Where filename is from one of the three following files in build/src:
 ```
