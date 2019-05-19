@@ -77,7 +77,7 @@ function incrementInventory(database: Database) {
           database.close();
         });
       } else {
-        console.log('Item with id ' + productId + ' does not exist.');
+        console.log('Item with id ' + productId + ' does not exist. Please try again and select a different product.');
         database.close();
       }
     });

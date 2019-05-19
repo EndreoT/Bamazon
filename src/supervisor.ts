@@ -6,7 +6,7 @@ import { config, ProductShape, isInteger } from './utils';
 
 
 enum Choices {
-  SALES_BY_PRODUCT = 'View Sales By Product',
+  SALES_BY_PRODUCT = 'View Sales By department',
   CREATE_DEPARTMENT = 'Create New Department',
 }
 
